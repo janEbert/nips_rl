@@ -1,15 +1,17 @@
 import numpy as np
-from osim.env import RunEnv
+from osim.env import ProstheticsEnv
 from gym.spaces import Box, MultiBinary
 
 
-class RunEnv2(RunEnv):
-    def __init__(self, state_transform, visualize=False, max_obstacles=3,
-                 skip_frame=5, reward_mult=10.):
-        super(RunEnv2, self).__init__(visualize, max_obstacles)
+class RunEnv2(ProstheticsEnv):
+    def __init__(self, state_transform, visualize=False,
+                 integrator_accuracy=5e-5, model='3D', prosthetic=True,
+                 difficulty=0, skip_frame=5, reward_mult=10.):
+        super(RunEnv2, self).__init__(visualize, integrator_accuracy)
+        self.change_model(model, prosthetic, difficulty)
         self.state_transform = state_transform
-        self.observation_space = Box(-1000, 1000, state_transform.state_size)
-        self.action_space = MultiBinary(18)
+        self.observation_space = Box(-1000, 1000, [state_transform.state_size])
+        self.action_space = MultiBinary(self.get_action_space_size())
         self.skip_frame = skip_frame
         self.reward_mult = reward_mult
 
@@ -29,17 +31,17 @@ class RunEnv2(RunEnv):
             s, obst_rew = self.state_transform.process(s)
             reward += r + obst_rew
             if t:
-                break            
+                break
 
         return s, reward*self.reward_mult, t, info
 
 
-class JumpEnv(RunEnv):
+class JumpEnv(ProstheticsEnv):
     noutput = 9
     ninput = 38
 
-    def __init__(self, visualize=False, max_obstacles=0):
-        super(JumpEnv, self).__init__(visualize, max_obstacles)
+    def __init__(self, visualize=False, integrator_accuracy=5e-5):
+        super(JumpEnv, self).__init__(visualize, integrator_accuracy)
         self.action_space = MultiBinary(9)
 
     def get_observation(self):

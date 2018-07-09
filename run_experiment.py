@@ -19,9 +19,15 @@ from time import time
 import config
 import shutil
 
+# python run_experiment.py --accuracy 0.01 --modeldim 3D --prosthetic False --param_noise_prob 0.3 --flip_prob 1 --layer_norm
 
 def get_args():
     parser = argparse.ArgumentParser(description="Run commands")
+    parser.add_argument('--accuracy', dest='accuracy', action='store', default=5e-5, type=float)
+    parser.add_argument('--modeldim', dest='modeldim', action='store', default='3D',
+            choices=('3d', '2d', '3D', '2D'), type=str)
+    parser.add_argument('--prosthetic', dest='prosthetic', action='store', default=True, type=bool)
+    parser.add_argument('--difficulty', dest='difficulty', action='store', default=0, type=int)
     parser.add_argument('--gamma', type=float, default=0.9, help="Discount factor for reward.")
     parser.add_argument('--n_threads', type=int, default=cpu_count(), help="Number of agents to run.")
     parser.add_argument('--sleep', type=int, default=0, help="Sleep time in seconds before start each worker.")
@@ -30,23 +36,26 @@ def get_args():
     parser.add_argument('--save_period_min', default=30, type=int, help="Save interval int min.")
     parser.add_argument('--num_test_episodes', type=int, default=5, help="Number of test episodes.")
     parser.add_argument('--batch_size', type=int, default=200, help="Batch size.")
-    parser.add_argument('--start_train_steps', type=int, default=10000, help="Number of steps tp start training.")
+    parser.add_argument('--start_train_steps', type=int, default=10000, help="Number of steps to start training.")
     parser.add_argument('--critic_lr', type=float, default=2e-3, help="critic learning rate")
     parser.add_argument('--actor_lr', type=float, default=1e-3, help="actor learning rate.")
     parser.add_argument('--critic_lr_end', type=float, default=5e-5, help="critic learning rate")
     parser.add_argument('--actor_lr_end', type=float, default=5e-5, help="actor learning rate.")
     parser.add_argument('--flip_prob', type=float, default=1., help="Probability of flipping.")
-    parser.add_argument('--layer_norm', action='store_true', help="Use layer normaliation.")
+    parser.add_argument('--layer_norm', action='store_true', help="Use layer normalization.")
     parser.add_argument('--param_noise_prob', type=float, default=0.3, help="Probability of parameters noise.")
-    parser.add_argument('--exp_name', type=str, default=datetime.now().strftime("%d.%m.%Y-%H:%M"),
+    parser.add_argument('--exp_name', type=str, default=datetime.now().strftime("%d.%m.%Y-%H.%M"),
                         help='Experiment name')
     parser.add_argument('--weights', type=str, default=None, help='weights to load')
-    return parser.parse_args()
+    args = parser.parse_args()
+    args.modeldim = args.modeldim.upper()
+    return args
 
 
-def test_agent(testing, state_transform, num_test_episodes,
+def test_agent(args, testing, state_transform, num_test_episodes,
                model_params, weights, best_reward, updates, global_step, save_dir):
-    env = RunEnv2(state_transform, max_obstacles=config.num_obstacles, skip_frame=1)
+    env = RunEnv2(state_transform, integrator_accuracy=args.accuracy, model=args.modeldim,
+                  prosthetic=args.prosthetic, difficulty=args.difficulty, skip_frame=1)
     test_rewards = []
 
     train_fn, actor_fn, target_update_fn, params_actor, params_crit, actor_lr, critic_lr = \
@@ -99,8 +108,13 @@ def main():
     state_transform = StateVelCentr(obstacles_mode='standard',
                                     exclude_centr=True,
                                     vel_states=[])
-    num_actions = 18
+    env = RunEnv2(state_transform, integrator_accuracy=0.1, model=args.modeldim,
+                  prosthetic=args.prosthetic, difficulty=args.difficulty, skip_frame=1)
+    env.change_model(args.modeldim, args.prosthetic, args.difficulty)
+    num_actions = env.get_action_space_size()
+    del env
 
+    print('building model')
     # build model
     model_params = {
         'state_size': state_transform.state_size,
@@ -124,7 +138,7 @@ def main():
     weights = [p.get_value() for p in params_actor]
 
     # build replay memory
-    memory = ReplayMemory(state_transform.state_size, 18, 5000000)
+    memory = ReplayMemory(state_transform.state_size, num_actions, 5000000)
 
     # init shared variables
     global_step = Value('i', 0)
@@ -141,7 +155,7 @@ def main():
     for i in range(num_agents):
         w_queue = Queue()
         worker = Process(target=run_agent,
-                         args=(model_params, weights, state_transform, data_queue, w_queue,
+                         args=(args, model_params, weights, state_transform, data_queue, w_queue,
                                i, global_step, updates, best_reward,
                                args.param_noise_prob, save_dir, args.max_steps)
                          )
@@ -151,6 +165,7 @@ def main():
         workers.append(worker)
         weights_queues.append(w_queue)
 
+    print('starting training')
     prev_steps = 0
     start_save = time()
     start_test = time()
@@ -221,7 +236,7 @@ def main():
             else:
                 _weights = weights
             worker = Process(target=test_agent,
-                             args=(testing, state_transform, args.num_test_episodes,
+                             args=(args, testing, state_transform, args.num_test_episodes,
                                    model_params, _weights, best_reward,
                                    updates, global_step, save_dir)
                              )
@@ -229,6 +244,7 @@ def main():
             worker.start()
             start_test = time()
 
+    print('training finished')
     # end all processes
     for w in workers:
         w.join()
