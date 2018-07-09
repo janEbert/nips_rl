@@ -11,6 +11,7 @@ class RunEnv2(ProstheticsEnv):
         self.change_model(model, prosthetic, difficulty)
         self.state_transform = state_transform
         self.observation_space = Box(-1000, 1000, [state_transform.state_size])
+        self.noutput = self.get_observation_space_size()
         self.action_space = MultiBinary(self.get_action_space_size())
         self.skip_frame = skip_frame
         self.reward_mult = reward_mult
