@@ -105,7 +105,7 @@ def run_agent(args, model_params, weights, state_transform, data_queue, weights_
     action_noise = True
     while global_step.value < max_steps:
         seed = random.randrange(2**32-2)
-        state = env.reset(seed=seed, difficulty=2)
+        state = env.reset(seed=seed, difficulty=args.difficulty)
         random_process.reset_states()
 
         total_reward = 0.

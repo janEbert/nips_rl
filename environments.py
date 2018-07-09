@@ -8,7 +8,8 @@ class RunEnv2(ProstheticsEnv):
                  integrator_accuracy=5e-5, model='3D', prosthetic=True,
                  difficulty=0, skip_frame=5, reward_mult=10.):
         super(RunEnv2, self).__init__(visualize, integrator_accuracy)
-        self.change_model(model, prosthetic, difficulty)
+        self.args = (model, prosthetic, difficulty)
+        self.change_model(*self.args)
         self.state_transform = state_transform
         self.observation_space = Box(-1000, 1000, [state_transform.state_size])
         self.noutput = self.get_observation_space_size()
@@ -17,7 +18,8 @@ class RunEnv2(ProstheticsEnv):
         self.reward_mult = reward_mult
 
     def reset(self, difficulty=2, seed=None):
-        s = super(RunEnv2, self).reset(difficulty=difficulty, seed=seed)
+        self.change_model(self.args[0], self.args[1], difficulty, seed)
+        s = super(RunEnv2, self).reset()
         self.state_transform.reset()
         s, _ = self.state_transform.process(s)
         return s

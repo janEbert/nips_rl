@@ -21,22 +21,21 @@ You may want to change conda env name in script and comment last line if not bui
 
 ### Manual (after having setup the OpenSim venv):
 Install dependencies:
-```
-$ conda install numpy scipy scikit-learn mkl theano
-$ pip install https://github.com/Lasagne/Lasagne/archive/master.zip
-```
+        $ conda install numpy scipy scikit-learn mkl theano
+        $ pip install https://github.com/Lasagne/Lasagne/archive/master.zip
 
 # Running code
 1) Activate environment:
 
         $ source activate nips_rl_fast3
+
 2) Run code with best flags:
 
         $ python run_experiment.py --param_noise_prob 0.3 --flip_prob 1 --layer_norm
 
-   Model parameters:
+   New model parameters:
 
-        `--accuracy 0.01 --modeldim 3D --prosthetic False --difficulty 0`
+        --accuracy 0.01 --modeldim 3D --prosthetic False --difficulty 0
 
 # Other
 The final submitted model was trained in this [commit](https://github.com/fgvbrt/nips_rl/tree/e2ffeaa475c57c64bf6d4664b2ab47b46ecc1c6e/dpg3).
