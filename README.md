@@ -21,6 +21,7 @@ You may want to change conda env name in script and comment last line if not bui
 
 ### Manual (after having setup the OpenSim venv):
 Install dependencies:
+
         $ conda install numpy scipy scikit-learn mkl theano
         $ pip install https://github.com/Lasagne/Lasagne/archive/master.zip
 
