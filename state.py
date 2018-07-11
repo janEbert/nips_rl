@@ -205,18 +205,18 @@ class State(object):
             return np.asarray(obst_state), obst_reward
 
     def process(self, state):
-        state = np.asarray(state)
-        state = state[self.state_idxs]
+        state = np.asarray(state) # size 158
+        state = state[self.state_idxs] # only body parts and obstacles
         if self.step == 0:
-            state[-3:] = [100, 0, 0]
+            state[-3:] = [100, 0, 0] # set obstacle values
 
         self._add_obstacle(state)
         obst_state, obst_reward = self._get_obstacle_state_reward(state)
-        state = state[:-3]
+        state = state[:-3] # now only look at values excluding obstacles
 
         # update last bodies
         #state_no_pred = state.copy()
-        if self.predict_bodies:
+        if self.predict_bodies: # False
             self._predict_bodies(state)
             #state_out = (state_no_pred + state)/2
             #state_out = state
@@ -282,7 +282,7 @@ class StateVelCentr(State):
         super(StateVelCentr, self).__init__(obstacles_mode=obstacles_mode, last_n_bodies=last_n_bodies)
 
         # center
-        self.centr_idx = self.state_names.index(centr_state) # 1
+        self.centr_idx = self.state_names.index(centr_state) # 1, index of pelvis_x
         self.states_to_center = [self.state_names.index(k) for k in states_to_center] # [22, 18, 24, 26, 28, 30, 32]
         # velocities
         self.prev_vals = None
@@ -316,19 +316,19 @@ class StateVelCentr(State):
     def process(self, state):
         (state, obst_state), obst_reward = super(StateVelCentr, self).process(state)
 
-        if self.vel_before_centr:
-            cur_vals = state[self.vel_idxs]
-            vel = calculate_velocity(cur_vals, self.prev_vals)
-            self.prev_vals = cur_vals
-            state[self.states_to_center] -= state[self.centr_idx]
+        if self.vel_before_centr: # True
+            cur_vals = state[self.vel_idxs] # []
+            vel = calculate_velocity(cur_vals, self.prev_vals) []
+            self.prev_vals = cur_vals # []
+            state[self.states_to_center] -= state[self.centr_idx] # transform states to center via pelvis_x
         else:
             state[self.states_to_center] -= state[self.centr_idx]
             cur_vals = state[self.vel_idxs]
             vel = calculate_velocity(cur_vals, self.prev_vals)
             self.prev_vals = cur_vals
 
-        if self.exclude_centr:
-            state = np.concatenate([state[:max(0, self.centr_idx)], state[self.centr_idx+1:]])
+        if self.exclude_centr: # True
+            state = np.concatenate([state[:max(0, self.centr_idx)], state[self.centr_idx+1:]]) # take everything except center (pelvix_x)
 
-        state = np.concatenate((state, vel, obst_state))
+        state = np.concatenate((state, vel, obst_state)) # only state if removing obstacles as vel is []
         return state, obst_reward
