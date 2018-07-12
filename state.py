@@ -318,7 +318,7 @@ class StateVelCentr(State):
 
         if self.vel_before_centr: # True
             cur_vals = state[self.vel_idxs] # []
-            vel = calculate_velocity(cur_vals, self.prev_vals) []
+            vel = calculate_velocity(cur_vals, self.prev_vals) # []
             self.prev_vals = cur_vals # []
             state[self.states_to_center] -= state[self.centr_idx] # transform states to center via pelvis_x
         else:

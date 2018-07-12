@@ -21,7 +21,7 @@ class RunEnv2(ProstheticsEnv):
         self.change_model(self.args[0], self.args[1], difficulty, seed)
         s = super(RunEnv2, self).reset()
         self.state_transform.reset()
-        s, _ = self.state_transform.process(s)
+        s = self.state_transform.process(s)
         return s
 
     def _step(self, action):
