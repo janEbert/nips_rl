@@ -283,6 +283,7 @@ class StateVelCentr(State):
 
         # center
         self.centr_idx = self.state_names.index(centr_state) # 1, index of pelvis_x
+        # x values of ['head', 'mass', 'torso', 'toes_left', 'toes_right', 'talus_left', 'talus_right']
         self.states_to_center = [self.state_names.index(k) for k in states_to_center] # [22, 18, 24, 26, 28, 30, 32]
         # velocities
         self.prev_vals = None

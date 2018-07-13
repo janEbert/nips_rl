@@ -29,7 +29,7 @@ class RunEnv2(ProstheticsEnv):
         info = {'original_reward':0}
         reward = 0.
         for _ in range(self.skip_frame):
-            s, r, t, _ = super(RunEnv2, self).step(action)
+            s, r, t, _ = super(RunEnv2, self).step(action, False)
             info['original_reward'] += r
             s = self.state_transform.process(s)
             reward += r
