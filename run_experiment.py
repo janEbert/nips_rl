@@ -41,7 +41,8 @@ def get_args():
     parser.add_argument('--actor_lr', type=float, default=1e-3, help="actor learning rate.")
     parser.add_argument('--critic_lr_end', type=float, default=5e-5, help="critic learning rate")
     parser.add_argument('--actor_lr_end', type=float, default=5e-5, help="actor learning rate.")
-    parser.add_argument('--flip_prob', type=float, default=1., help="Probability of flipping.")
+    parser.add_argument('--flip_prob', type=float, default=0.,
+                        help="Probability of flipping.")
     parser.add_argument('--layer_norm', action='store_true', help="Use layer normalization.")
     parser.add_argument('--param_noise_prob', type=float, default=0.3, help="Probability of parameters noise.")
     parser.add_argument('--exp_name', type=str, default=datetime.now().strftime("%d.%m.%Y-%H.%M"),
