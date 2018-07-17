@@ -63,7 +63,7 @@ def build_actor_critic(state_size, num_act, actor_layers, critic_layers, layer_n
     l_actions = InputLayer([None, num_act])
     l_input_critic = ConcatLayer([l_states, l_actions])
     # actor layer
-    l_actor = build_actor(l_states, num_act, hid_size=actor_layers, layer_norm=layer_norm)
+    l_actor = build_actor(l_states, num_act, hid_sizes=actor_layers, layer_norm=layer_norm)
     # critic layer
     l_critic = build_critic(l_input_critic, hid_sizes=critic_layers, layer_norm=layer_norm)
     return l_states, l_actions, l_actor, l_critic

@@ -21,7 +21,7 @@ from time import time
 import config
 import shutil
 
-# python run_experiment.py --accuracy 0.01 --modeldim 3D --prosthetic False --actor_layers (128,128) --critic_layers (128,64) --param_noise_prob 0.3 --layer_norm
+# python run_experiment.py --accuracy 0.01 --modeldim 3D --prosthetic False --actor_layers \(128,128\) --critic_layers \(128,64\) --param_noise_prob 0.3 --layer_norm
 
 def get_args():
     parser = argparse.ArgumentParser(description="Run commands")

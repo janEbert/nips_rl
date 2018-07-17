@@ -36,7 +36,7 @@ Install dependencies:
 
    New model parameters:
 
-        --accuracy 0.01 --modeldim 3D --prosthetic False --difficulty 0 --actor_layers (64,64) --critic_layers (64,32)
+        --accuracy 0.01 --modeldim 3D --prosthetic False --difficulty 0 --actor_layers \(64,64\) --critic_layers \(64,32\)
 
 # Other
 The final submitted model was trained in this [commit](https://github.com/fgvbrt/nips_rl/tree/e2ffeaa475c57c64bf6d4664b2ab47b46ecc1c6e/dpg3).
