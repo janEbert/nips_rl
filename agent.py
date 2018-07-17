@@ -119,7 +119,7 @@ def run_agent(args, model_params, weights, state_transform, data_queue, weights_
             if action_noise:
                 action += random_process.sample()
 
-            next_state, reward, next_terminal, info = env.step(action)
+            next_state, reward, next_terminal, info = env._step(action)
             total_reward += reward
             total_reward_original += info['original_reward']
             steps += 1
