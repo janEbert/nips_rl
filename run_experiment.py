@@ -3,6 +3,8 @@ os.environ['OMP_NUM_THREADS'] = '1'
 os.environ['THEANO_FLAGS'] = 'device=cpu'
 
 import argparse
+from ast import literal_eval
+
 import numpy as np
 from model import build_model, Agent
 from time import sleep
@@ -19,7 +21,7 @@ from time import time
 import config
 import shutil
 
-# python run_experiment.py --accuracy 0.01 --modeldim 3D --prosthetic False --param_noise_prob 0.3 --layer_norm
+# python run_experiment.py --accuracy 0.01 --modeldim 3D --prosthetic False --actor_layers (128,128) --critic_layers (128,64) --param_noise_prob 0.3 --layer_norm
 
 def get_args():
     parser = argparse.ArgumentParser(description="Run commands")
@@ -39,6 +41,8 @@ def get_args():
     parser.add_argument('--start_train_steps', type=int, default=10000, help="Number of steps to start training.")
     parser.add_argument('--critic_lr', type=float, default=2e-3, help="critic learning rate")
     parser.add_argument('--actor_lr', type=float, default=1e-3, help="actor learning rate.")
+    parser.add_argument('--critic_layers', type=str, default='(64,32)', help="critic hidden layer sizes as tuple")
+    parser.add_argument('--actor_layers', type=str, default='(64,64)', help="actor hidden layer sizes as tuple")
     parser.add_argument('--critic_lr_end', type=float, default=5e-5, help="critic learning rate")
     parser.add_argument('--actor_lr_end', type=float, default=5e-5, help="actor learning rate.")
     parser.add_argument('--flip_prob', type=float, default=0.,
@@ -97,6 +101,8 @@ def test_agent(args, testing, state_transform, num_test_episodes,
 
 def main():
     args = get_args()
+    args.critic_layers = literal_eval(args.critic_layers)
+    args.actor_layers = literal_eval(args.actor_layers)
 
     # create save directory
     save_dir = os.path.join('weights', args.exp_name)
@@ -122,6 +128,8 @@ def main():
         'state_size': state_transform.state_size,
         'num_act': num_actions,
         'gamma': args.gamma,
+        'actor_layers': args.actor_layers,
+        'critic_layers': args.critic_layers,
         'actor_lr': args.actor_lr,
         'critic_lr': args.critic_lr,
         'layer_norm': args.layer_norm
