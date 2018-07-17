@@ -10,7 +10,7 @@ from multiprocessing import Process, cpu_count, Value, Queue
 import queue
 from memory import ReplayMemory
 from agent import run_agent
-from state import StateVelCentr
+from state import SameState
 import lasagne
 import random
 from environments import RunEnv2
@@ -105,9 +105,10 @@ def main():
         shutil.move(save_dir, save_dir + '.backup')
         os.makedirs(save_dir)
 
-    state_transform = StateVelCentr(obstacles_mode='standard',
-                                    exclude_centr=True,
-                                    vel_states=[])
+    state_transform = SameState(args.prosthetic)
+    # state_transform = StateVelCentr(obstacles_mode='standard',
+    #                                 exclude_centr=True,
+    #                                 vel_states=[])
     env = RunEnv2(state_transform, integrator_accuracy=args.accuracy, model=args.modeldim,
                   prosthetic=args.prosthetic, difficulty=args.difficulty, skip_frame=1)
     env.change_model(args.modeldim, args.prosthetic, args.difficulty)

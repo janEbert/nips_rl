@@ -332,4 +332,17 @@ class StateVelCentr(State):
             state = np.concatenate([state[:max(0, self.centr_idx)], state[self.centr_idx+1:]]) # take everything except center (pelvix_x)
 
         state = np.concatenate((state, vel, obst_state)) # only state if removing obstacles as vel is []
-        return state, obst_reward
+        return state
+
+
+class SameState(object):
+    def __init__(self, prosthetic):
+        self.state_size = 390 if prosthetic else 443
+
+    @staticmethod
+    def reset():
+        pass
+
+    @staticmethod
+    def process(state):
+        return state

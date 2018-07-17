@@ -1,3 +1,5 @@
+from itertools import chain
+
 import numpy as np
 from osim.env import ProstheticsEnv
 from gym.spaces import Box, MultiBinary
@@ -19,7 +21,7 @@ class RunEnv2(ProstheticsEnv):
 
     def reset(self, difficulty=2, seed=None):
         self.change_model(self.args[0], self.args[1], difficulty, seed)
-        s = super(RunEnv2, self).reset()
+        s = self.dict_to_vec(super(RunEnv2, self).reset(False))
         self.state_transform.reset()
         s = self.state_transform.process(s)
         return s
@@ -30,6 +32,7 @@ class RunEnv2(ProstheticsEnv):
         reward = 0.
         for _ in range(self.skip_frame):
             s, r, t, _ = super(RunEnv2, self).step(action, False)
+            s = self.dict_to_vec(s)
             info['original_reward'] += r
             s = self.state_transform.process(s)
             reward += r
@@ -37,6 +40,21 @@ class RunEnv2(ProstheticsEnv):
                 break
 
         return s, reward*self.reward_mult, t, info
+
+    @staticmethod
+    def dict_to_vec(dict_):
+        """Project a dictionary to a vector.
+        Filters fiber forces in muscle dictionary as they are already
+        contained in the forces dictionary.
+        """
+        # length without prosthesis: 443 (+ 22 redundant values)
+        # length with prosthesis: 390 (+ 19 redundant values)
+        return [val_or_key if name != 'muscles'
+                else list_or_dict[val_or_key]
+                for name, subdict in dict_.items()
+                for list_or_dict in subdict.values()
+                for val_or_key in list_or_dict
+                if val_or_key != 'fiber_force']
 
 
 class JumpEnv(ProstheticsEnv):
