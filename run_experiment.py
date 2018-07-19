@@ -77,7 +77,7 @@ def test_agent(args, testing, state_transform, num_test_episodes,
         while True:
             state = np.asarray(state, dtype='float32')
             action = actor.act(state)
-            state, reward, terminal, _ = env.step(action)
+            state, reward, terminal, _ = env._step(action)
             test_reward += reward
             if terminal:
                 break
@@ -150,7 +150,7 @@ def main():
     weights = [p.get_value() for p in params_actor]
 
     # build replay memory
-    memory = ReplayMemory(state_transform.state_size, num_actions, 5000000)
+    memory = ReplayMemory(state_transform.state_size, num_actions, 500)
 
     # init shared variables
     global_step = Value('i', 0)
