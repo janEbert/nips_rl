@@ -42,6 +42,9 @@ class RunEnv2(ProstheticsEnv):
 
         return s, reward*self.reward_mult, t, info
 
+    def x_velocity_reward(self, state):
+        return state['body_vel']['pelvis'][0]
+
     @staticmethod
     def dict_to_vec(dict_):
         """Project a dictionary to a vector.
@@ -50,12 +53,13 @@ class RunEnv2(ProstheticsEnv):
         """
         # length without prosthesis: 443 (+ 22 redundant values)
         # length with prosthesis: 390 (+ 19 redundant values)
-        return [val_or_key if name != 'muscles'
+        vec = [val_or_key if name != 'muscles'
                 else list_or_dict[val_or_key]
                 for name, subdict in dict_.items()
                 for list_or_dict in subdict.values()
                 for val_or_key in list_or_dict
                 if val_or_key != 'fiber_force']
+        return np.array(vec)
 
 
 class JumpEnv(ProstheticsEnv):

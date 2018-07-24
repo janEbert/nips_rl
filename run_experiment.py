@@ -12,7 +12,7 @@ from multiprocessing import Process, cpu_count, Value, Queue
 import queue
 from memory import ReplayMemory
 from agent import run_agent
-from state import SameState
+from state import NormState
 import lasagne
 import random
 from environments import RunEnv2
@@ -22,6 +22,7 @@ import config
 import shutil
 
 # python run_experiment.py --accuracy 0.01 --modeldim 3D --prosthetic False --actor_layers \(128,128\) --critic_layers \(128,64\) --param_noise_prob 0.3 --layer_norm
+# python run_experiment.py --accuracy 0.01 --modeldim 3D --prosthetic False --actor_layers \(128,128\) --critic_layers \(128,64\) --test --param_noise_prob 0.3 --layer_norm --weights weights/DATE/weights_updates_X.pkl
 
 def get_args():
     parser = argparse.ArgumentParser(description="Run commands")
@@ -114,7 +115,7 @@ def main():
         shutil.move(save_dir, save_dir + '.backup')
         os.makedirs(save_dir)
 
-    state_transform = SameState(args.prosthetic)
+    state_transform = NormState(args.prosthetic)
     # state_transform = StateVelCentr(obstacles_mode='standard',
     #                                 exclude_centr=True,
     #                                 vel_states=[])
