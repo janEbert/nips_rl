@@ -348,7 +348,7 @@ class SameState(object):
 
 class NormState(object):
     def __init__(self, prosthetic):
-        last_body_pos_x_index = 81 if self.prosthetic else 87
+        last_body_pos_x_index = 81 if prosthetic else 87
         self.body_pos_x_indices = tuple(i
                 for i in range(51, last_body_pos_x_index + 1, 3))
         self.body_pos_z_indices = tuple(i

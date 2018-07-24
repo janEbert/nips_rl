@@ -53,13 +53,12 @@ class RunEnv2(ProstheticsEnv):
         """
         # length without prosthesis: 443 (+ 22 redundant values)
         # length with prosthesis: 390 (+ 19 redundant values)
-        vec = [val_or_key if name != 'muscles'
+        return np.array([val_or_key if name != 'muscles'
                 else list_or_dict[val_or_key]
                 for name, subdict in dict_.items()
                 for list_or_dict in subdict.values()
                 for val_or_key in list_or_dict
-                if val_or_key != 'fiber_force']
-        return np.array(vec)
+                if val_or_key != 'fiber_force'])
 
 
 class JumpEnv(ProstheticsEnv):
