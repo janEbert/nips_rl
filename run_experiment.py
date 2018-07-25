@@ -151,7 +151,7 @@ def main():
     weights = [p.get_value() for p in params_actor]
 
     # build replay memory
-    memory = ReplayMemory(state_transform.state_size, num_actions, 500)
+    memory = ReplayMemory(state_transform.state_size, num_actions, 5000000)
 
     # init shared variables
     global_step = Value('i', 0)
