@@ -349,10 +349,10 @@ class SameState(object):
 class NormState(object):
     def __init__(self, prosthetic):
         last_body_pos_x_index = 81 if prosthetic else 87
-        self.body_pos_x_indices = tuple(i
-                for i in range(51, last_body_pos_x_index + 1, 3))
-        self.body_pos_z_indices = tuple(i
-                for i in range(53, last_body_pos_x_index + 3, 3))
+        self.body_pos_x_indices = (tuple(i
+                for i in range(51, last_body_pos_x_index + 1, 3)),)
+        self.body_pos_z_indices = (tuple(i
+                for i in range(53, last_body_pos_x_index + 3, 3)),)
         if prosthetic:
             # body_pos_indices: 51 bis 81, je diesen plus diesen plus zwei
             self.state_size = 390
@@ -365,7 +365,7 @@ class NormState(object):
 
     def process(self, state):
         # subtract pelvis x position
-        state[self.body_pos_x_indices] -= state[51]
+        state[self.body_pos_x_indices,] -= state[51]
         # subtract pelvis y position
-        state[self.body_pos_z_indices] -= state[53]
+        state[self.body_pos_z_indices,] -= state[53]
         return state
