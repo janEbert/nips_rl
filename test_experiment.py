@@ -4,13 +4,14 @@ os.environ['THEANO_FLAGS'] = 'device=cpu'
 import argparse
 from ast import literal_eval
 import random
+import shutil
 
 import numpy as np
 
+import config
 from model import build_model, Agent
 from state import NormState
 from environments import RunEnv2
-import shutil
 
 
 def get_args():
@@ -25,20 +26,18 @@ def get_args():
     parser.add_argument('--actor_layers', type=str, default='(64,64)', help="actor hidden layer sizes as tuple")
     parser.add_argument('--layer_norm', action='store_true', help="Use layer normalization.")
     parser.add_argument('--weights', type=str, default=None, help='weights to load')
+    parser.add_argument('--skip_frames', type=int, default=config.skip_frames, help='how many frames to execute each action for')
     args = parser.parse_args()
     args.modeldim = args.modeldim.upper()
     return args
 
 def test_agent(args, state_transform, num_test_episodes,
-               model_params, weights, global_step, save_dir):
+               actor, weights, global_step, save_dir):
     env = RunEnv2(state_transform, visualize=True, integrator_accuracy=args.accuracy,
                   model=args.modeldim, prosthetic=args.prosthetic, difficulty=args.difficulty,
-                  skip_frame=1)
+                  skip_frame=config.skip_frames)
     test_rewards = []
 
-    train_fn, actor_fn, target_update_fn, params_actor, params_crit, actor_lr, critic_lr = \
-            build_model(**model_params)
-    actor = Agent(actor_fn, params_actor, params_crit)
     actor.set_actor_weights(weights)
     if args.weights is not None:
         actor.load(args.weights)
@@ -85,17 +84,17 @@ def main():
     del env
 
     model_params = {
-        'state_size': state_transform.state_size,
-        'num_act': num_actions,
-        'gamma': 0,
-        'actor_layers': args.actor_layers,
-        'critic_layers': args.critic_layers,
-        'actor_lr': 0,
-        'critic_lr': 0,
-        'layer_norm': args.layer_norm
+            'state_size': state_transform.state_size,
+            'num_act': num_actions,
+            'gamma': 0,
+            'actor_layers': args.actor_layers,
+            'critic_layers': args.critic_layers,
+            'actor_lr': 0,
+            'critic_lr': 0,
+            'layer_norm': args.layer_norm
     }
     train_fn, actor_fn, target_update_fn, params_actor, params_crit, actor_lr, critic_lr = \
-        build_model(**model_params)
+            build_model(**model_params)
     actor = Agent(actor_fn, params_actor, params_crit)
 
     actor.load(args.weights)
@@ -104,7 +103,7 @@ def main():
 
     global_step = 0
     test_agent(args, state_transform, args.episodes,
-            model_params, weights, global_step, save_dir)
+            actor, weights, global_step, save_dir)
 
 if __name__ == '__main__':
     main()
