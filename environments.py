@@ -33,6 +33,7 @@ class RunEnv2(ProstheticsEnv):
         reward = 0.
         for _ in range(self.skip_frame):
             s, r, t, _ = super(RunEnv2, self).step(action, False)
+            r = x_velocity_reward(s)
             s = self.dict_to_vec(s)
             info['original_reward'] += r
             s = self.state_transform.process(s)
@@ -43,6 +44,10 @@ class RunEnv2(ProstheticsEnv):
         return s, reward*self.reward_mult, t, info
 
     def x_velocity_reward(self, state):
+        if state['body_pos']['pelvis'][1] < 0.7:
+            # if agent is falling, return negative reward
+            return -10
+        # x velocity of pelvis
         return state['body_vel']['pelvis'][0]
 
     @staticmethod
