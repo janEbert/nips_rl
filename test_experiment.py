@@ -2,11 +2,11 @@ import os
 import argparse
 from ast import literal_eval
 
+import numpy as np
+
 from model import build_model, Agent
 from state import NormState
-import lasagne
 from environments import RunEnv2
-import config
 import shutil
 
 
@@ -62,7 +62,7 @@ def test_agent(args, testing, state_transform, num_test_episodes,
     with open(os.path.join('test_report.log'), 'a') as f:
         f.write(test_str + '\n')
 
-def main()
+def main():
     args = get_args()
     args.critic_layers = literal_eval(args.critic_layers)
     args.actor_layers = literal_eval(args.actor_layers)
