@@ -70,6 +70,8 @@ def test_agent(args, testing, state_transform, num_test_episodes,
         build_model(**model_params)
     actor = Agent(actor_fn, params_actor, params_crit)
     actor.set_actor_weights(weights)
+    if args.weights is not None:
+        actor.load(args.weights)
 
     for ep in range(num_test_episodes):
         seed = random.randrange(2**32-2)
