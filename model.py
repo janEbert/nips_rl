@@ -160,6 +160,94 @@ def build_model(state_size, num_act, gamma=0.99,
     return train_fn, actor_fn, target_update_fn, params_actor, params_crit, actor_lr, critic_lr
 
 
+def build_model_test(state_size, num_act, gamma=0.99,
+                     actor_layers=(64, 64),
+                     critic_layers=(64, 32),
+                     actor_lr=0.00025,
+                     critic_lr=0.0005,
+                     target_update_coeff=1e-4,
+                     clip_delta=10.,
+                     layer_norm=True):
+
+    # input tensors
+    states = T.matrix('states')
+    next_states = T.matrix('next_states')
+    actions = T.matrix('actions')
+    rewards = T.col('rewards')
+    terminals = T.col('terminals')
+
+    # current network
+    l_states, l_actions, l_actor, l_critic = build_actor_critic(state_size,
+            num_act, actor_layers, critic_layers, layer_norm)
+    # target network
+    l_states_target, l_actions_target, l_actor_target, l_critic_target =\
+        build_actor_critic(state_size, num_act, actor_layers, critic_layers, layer_norm)
+
+    # get current network output tensors
+    actions_pred = lasagne.layers.get_output(l_actor, states)
+    q_vals = lasagne.layers.get_output(l_critic, {l_states: states, l_actions: actions})
+    v_vals = lasagne.layers.get_output(l_critic, {l_states: states, l_actions: actions_pred})
+
+    # get target network q-values
+    actions_pred_target = lasagne.layers.get_output(l_actor_target, next_states)
+    v_vals_target = lasagne.layers.get_output(
+        l_critic_target,
+        {l_states_target: next_states, l_actions_target: actions_pred_target})
+
+    # target for q_vals
+    target = gamma*v_vals_target*(1.-terminals) + rewards
+    td_error = target - q_vals
+
+    # critic loss
+    if clip_delta > 0:
+        quadratic_part = T.minimum(abs(td_error), clip_delta)
+        linear_part = abs(td_error) - quadratic_part
+        critic_loss = 0.5 * quadratic_part ** 2 + clip_delta * linear_part
+    else:
+        critic_loss = 0.5 * td_error ** 2
+    critic_loss = T.mean(critic_loss)
+
+    # actor loss
+    actor_loss = -1.*T.mean(v_vals)
+
+    # get params
+    params_actor = lasagne.layers.get_all_params(l_actor)
+    params_crit = lasagne.layers.get_all_params(l_critic)
+    params = params_actor + params_crit
+    # get target params
+    params_target = lasagne.layers.get_all_params(l_actor_target) + \
+                    lasagne.layers.get_all_params(l_critic_target)
+
+    # set critic target to critic params
+    for param, param_target in zip(params, params_target):
+        param_target.set_value(param.get_value())
+
+    # calculate grads and steps
+    grads_actor = T.grad(actor_loss, params_actor)
+    grads_critic = T.grad(critic_loss, params_crit)
+    grads_actor = lasagne.updates.total_norm_constraint(grads_actor, 10)
+    grads_critic = lasagne.updates.total_norm_constraint(grads_critic, 10)
+
+    actor_lr = theano.shared(lasagne.utils.floatX(actor_lr))
+    critic_lr = theano.shared(lasagne.utils.floatX(critic_lr))
+    actor_updates = lasagne.updates.adam(grads_actor, params_actor, actor_lr, 0.9, 0.99)
+    critic_updates = lasagne.updates.adam(grads_critic, params_crit, critic_lr, 0.9, 0.99)
+    updates = OrderedDict()
+    updates.update(actor_updates)
+    updates.update(critic_updates)
+
+    # target function update
+    target_updates = OrderedDict()
+    for param, param_target in zip(params, params_target):
+        update = (1. - target_update_coeff) * param_target + target_update_coeff * param
+        target_updates[param_target] = update
+
+    # compile theano functions
+    actor_fn = theano.function([states], actions_pred)
+
+    return actor_fn, params_actor, params_crit, actor_lr, critic_lr
+
+
 class Agent(object):
     def __init__(self, actor_fn, params_actor, params_crit):
         self._actor_fn = actor_fn

@@ -9,7 +9,7 @@ import shutil
 import numpy as np
 
 import config
-from model import build_model, Agent
+from model import build_model_test, Agent
 from state import NormState
 from environments import RunEnv2
 
@@ -64,6 +64,7 @@ def test_agent(args, state_transform, num_test_episodes,
     with open(os.path.join('test_report.log'), 'a') as f:
         f.write(test_str + '\n')
 
+
 def main():
     args = get_args()
     args.critic_layers = literal_eval(args.critic_layers)
@@ -93,8 +94,8 @@ def main():
             'critic_lr': 0,
             'layer_norm': args.layer_norm
     }
-    train_fn, actor_fn, target_update_fn, params_actor, params_crit, actor_lr, critic_lr = \
-            build_model(**model_params)
+    actor_fn, params_actor, params_crit, actor_lr, critic_lr = \
+            build_model_test(**model_params)
     actor = Agent(actor_fn, params_actor, params_crit)
 
     actor.load(args.weights)
