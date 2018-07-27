@@ -1,6 +1,9 @@
 import os
+os.environ['THEANO_FLAGS'] = 'device=cpu'
+
 import argparse
 from ast import literal_eval
+import random
 
 import numpy as np
 
@@ -26,7 +29,7 @@ def get_args():
     args.modeldim = args.modeldim.upper()
     return args
 
-def test_agent(args, testing, state_transform, num_test_episodes,
+def test_agent(args, state_transform, num_test_episodes,
                model_params, weights, global_step, save_dir):
     env = RunEnv2(state_transform, visualize=True, integrator_accuracy=args.accuracy,
                   model=args.modeldim, prosthetic=args.prosthetic, difficulty=args.difficulty,
@@ -70,9 +73,6 @@ def main():
     save_dir = os.path.join('tests')
     if not os.path.exists(save_dir):
         os.makedirs(save_dir)
-    else:
-        shutil.move(save_dir, save_dir + '.backup')
-        os.makedirs(save_dir)
 
     state_transform = NormState(args.prosthetic)
     # state_transform = StateVelCentr(obstacles_mode='standard',
@@ -103,8 +103,8 @@ def main():
     weights = [p.get_value() for p in params_actor]
 
     global_step = 0
-    test_agent(args, testing, state_transform, args.episodes,
-            model_params, _weights, global_step, save_dir)
+    test_agent(args, state_transform, args.episodes,
+            model_params, weights, global_step, save_dir)
 
 if __name__ == '__main__':
     main()

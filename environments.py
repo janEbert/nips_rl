@@ -33,7 +33,7 @@ class RunEnv2(ProstheticsEnv):
         reward = 0.
         for _ in range(self.skip_frame):
             s, r, t, _ = super(RunEnv2, self).step(action, False)
-            r = x_velocity_reward(s)
+            r = self.x_velocity_reward(s)
             s = self.dict_to_vec(s)
             info['original_reward'] += r
             s = self.state_transform.process(s)
